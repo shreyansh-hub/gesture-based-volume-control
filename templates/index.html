@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gesture Based Volume Control</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .main-wrapper {
+        width: 100%;
+        max-width: 1200px;
+      }
+
+      h1 {
+        color: white;
+        text-align: center;
+        margin-bottom: 25px;
+        font-size: 2.2em;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .container {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+      }
+
+      .left-panel {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .video-container {
+        position: relative;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #000;
+        width: 100%;
+        height: 480px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
+
+      .video-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .right-panel {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 25px;
+      }
+
+      .control-section {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 10px;
+        border-left: 4px solid #667eea;
+      }
+
+      .section-title {
+        font-size: 1.2em;
+        font-weight: bold;
+        color: #667eea;
+        margin-bottom: 15px;
+      }
+
+      .control-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .btn {
+        padding: 15px 25px;
+        font-size: 1.1em;
+        font-weight: bold;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .btn-start {
+        background: #28a745;
+        color: white;
+      }
+
+      .btn-stop {
+        background: #dc3545;
+        color: white;
+      }
+
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .status-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+      }
+
+      .status-item {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .status-label {
+        font-size: 0.85em;
+        color: #666;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+      }
+
+      .status-value {
+        font-size: 1.4em;
+        font-weight: bold;
+        color: #28a745;
+      }
+
+      .status-warning {
+        color: #ffc107;
+      }
+
+      .status-stopped {
+        color: #dc3545;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="main-wrapper">
+      <h1>GestureVolume - Hand Gesture Control</h1>
+
+      <div class="container">
+        <div class="left-panel">
+          <div class="video-container">
+            <img src="{{ url_for('video_feed') }}" id="videoFeed" />
+          </div>
+        </div>
+
+        <div class="right-panel">
+          <div class="control-section">
+            <div class="section-title">Camera Controls</div>
+            <div class="control-buttons">
+              <button
+                class="btn btn-start"
+                id="startBtn"
+                onclick="startCamera()"
+              >
+                ▶️ Start Camera
+              </button>
+              <button class="btn btn-stop" id="stopBtn" onclick="stopCamera()">
+                ⏹️ Stop Camera
+              </button>
+            </div>
+          </div>
+
+          <div class="control-section">
+            <div class="section-title">System Status</div>
+            <div class="status-grid">
+              <div class="status-item">
+                <div class="status-label">Camera</div>
+                <div class="status-value" id="cameraStatus">🟢 Active</div>
+              </div>
+
+              <div class="status-item">
+                <div class="status-label">Gesture Status</div>
+                <div class="status-value status-warning" id="gestureStatus">
+                  👋 Ready
+                </div>
+              </div>
+
+              <!-- ✅ NEW -->
+              <div class="status-item">
+                <div class="status-label">Gesture Type</div>
+                <div class="status-value" id="gestureType">-</div>
+              </div>
+
+              <!-- ✅ NEW -->
+              <div class="status-item">
+                <div class="status-label">Gesture Quality</div>
+                <div class="status-value" id="gestureQuality">-</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let cameraRunning = true;
+
+      function updateAllStatus() {
+        if (!cameraRunning) return;
+
+        fetch("/gesture_status")
+          .then((res) => res.json())
+          .then((data) => {
+            const gs = document.getElementById("gestureStatus");
+            if (data.status === "detecting") {
+              gs.innerText = "✋ Detecting";
+              gs.className = "status-value";
+            } else {
+              gs.innerText = "👋 Ready";
+              gs.className = "status-value status-warning";
+            }
+          });
+
+        fetch("/gesture_info")
+          .then((res) => res.json())
+          .then((data) => {
+            document.getElementById("gestureType").innerText = data.gesture;
+            document.getElementById("gestureQuality").innerText = data.quality;
+          });
+      }
+
+      function stopCamera() {
+        // UI updates
+        document.getElementById("cameraStatus").innerHTML = "🔴 Stopped";
+        document.getElementById("cameraStatus").className =
+          "status-value status-stopped";
+
+        document.getElementById("gestureStatus").innerHTML = "⏸️ Inactive";
+        document.getElementById("gestureStatus").className =
+          "status-value status-stopped";
+
+        document.getElementById("gestureType").innerHTML = "—";
+        document.getElementById("gestureQuality").innerHTML = "—";
+
+        // ✅ Button states
+        document.getElementById("stopBtn").disabled = true;
+        document.getElementById("startBtn").disabled = false;
+
+        cameraRunning = false;
+
+        if (gestureCheckInterval) {
+          clearInterval(gestureCheckInterval);
+        }
+
+        fetch("/stop_camera", { method: "POST" });
+      }
+
+      function startCamera() {
+        // UI updates
+        document.getElementById("cameraStatus").innerHTML = "🟢 Active";
+        document.getElementById("cameraStatus").className = "status-value";
+
+        document.getElementById("gestureStatus").innerHTML = "👋 Ready";
+        document.getElementById("gestureStatus").className =
+          "status-value status-warning";
+
+        document.getElementById("gestureType").innerHTML = "-";
+        document.getElementById("gestureQuality").innerHTML = "-";
+
+        // ✅ Button states (IMPORTANT)
+        document.getElementById("startBtn").disabled = true;
+        document.getElementById("stopBtn").disabled = false;
+
+        cameraRunning = true;
+
+        gestureCheckInterval = setInterval(updateAllStatus, 500);
+
+        fetch("/start_camera", { method: "POST" }).then(() => {
+          // force refresh stream
+          const videoFeed = document.getElementById("videoFeed");
+          videoFeed.src =
+            videoFeed.src.split("?")[0] + "?t=" + new Date().getTime();
+        });
+      }
+
+      setInterval(updateAllStatus, 500);
+    </script>
+  </body>
+</html>
