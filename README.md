@@ -1,10 +1,10 @@
-# 🎛 Gesture Based Volume Control
+# Gesture Based Volume Control
 
 Control your system volume using hand gestures in real-time using computer vision.
 
 ---
 
-## 🚀 Features
+## Features
 
 - Real-time hand tracking using MediaPipe
 - Volume control using finger distance
@@ -14,7 +14,7 @@ Control your system volume using hand gestures in real-time using computer visio
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 - Python
 - Flask
@@ -24,7 +24,7 @@ Control your system volume using hand gestures in real-time using computer visio
 
 ---
 
-## ⚙️ Installation
+## Installation
 
 1. **Clone the repository**
    ```bash
@@ -47,7 +47,7 @@ Control your system volume using hand gestures in real-time using computer visio
 
 ---
 
-## 🧠 How it Works
+## How it Works
 
 1. **Detection:** Hand landmarks are detected using the MediaPipe Hands solution.
 2. **Calculation:** The system calculates the Euclidean distance between specific landmarks (e.g., thumb tip and index tip).
@@ -60,7 +60,7 @@ Control your system volume using hand gestures in real-time using computer visio
 
 ---
 
-## 📈 Future Improvements
+## Future Improvements
 
 - [ ] Screen brightness control integration
 - [ ] Support for custom user-defined gestures
@@ -68,7 +68,3 @@ Control your system volume using hand gestures in real-time using computer visio
 - [ ] Advanced UI/UX animations for the web dashboard
 
 ---
-
-## 👨‍💻 Author
-
-**Shreyansh Mishra**
