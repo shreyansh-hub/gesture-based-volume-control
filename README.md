@@ -4,12 +4,6 @@ Control your system volume using hand gestures in real-time using computer visio
 
 ---
 
-## How it works
-MediaPipe detects your hand landmarks in real time through the webcam. The app then measures the distance between your thumb tip and index finger tip, maps that distance to a 0–100 volume range, and uses PyAutoGUI to actually change the system volume. Close your fist to mute.
-The webcam feed runs through Flask so you can see what the camera sees in a browser tab while it's running.
-
----
-
 ## Features
 
 - Real-time hand tracking using MediaPipe
