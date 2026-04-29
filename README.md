@@ -28,7 +28,7 @@ Control your system volume using hand gestures in real-time using computer visio
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/gesture-volume-control.git
+   git clone https://github.com/shreyansh-hub/gesture-volume-control.git
    cd gesture-volume-control
    ```
 
